@@ -1,0 +1,81 @@
+#!/usr/bin/python
+import argparse
+import threading
+import time
+import sys
+import os.path
+
+
+#まさに徳を積むスタック
+toku_stack = []
+
+#何も設定しなかった場合のマントラ
+default_mantra = "まに"
+
+#ありがたそうでちょうどいい回す数
+max_times = 256
+
+#マニマニ回すスレッド
+class ManiThread(threading.Thread):
+    def __init__(self,mantra,cndtn):
+        self.mantra = mantra
+        self.cndtn = cndtn
+        threading.Thread.__init__(self)
+
+    def run(self):
+        self.cndtn.acquire()
+        for i in range(max_times):
+            toku_stack.append(self.mantra)
+        self.cndtn.notify()
+        self.cndtn.release()
+
+        
+#マントラファイルやお経テキストを読み込む。
+def read_text(filepath):
+    if (not os.path.exists(filepath) or os.path.isdir(filepath) ):
+        return None
+    f = open(filepath)
+    buf = f.read()
+    f.close()
+    return buf
+
+
+def mani_main():
+    import fileinput
+    #オプション解析するやつ
+    parser = argparse.ArgumentParser(description='mani')
+    parser.add_argument('-p',nargs='?',help='マントラを表示させる',default=False)
+    parser.add_argument('-hg',nargs='?',help='禿',default=False)
+    parser.add_argument('-f',nargs=1,help='お好きな有り難い言葉')
+    args = parser.parse_args()
+    
+    mantra = default_mantra
+    if(args.f != None) :
+        mtmp = read_text(args.f[0])
+        if mtmp != None:
+            mantra = mtmp
+    
+    #スレッドを待ち合わせ
+    cndtn = threading.Condition()
+    cndtn.acquire()
+    
+    mth = ManiThread(mantra,cndtn)
+    mth.start()
+    cndtn.wait()
+    cndtn.release()
+
+    if(args.p != False):
+        while(len(toku_stack) > 0):
+            print(toku_stack.pop())
+    
+    if(args.hg != False):
+        print(bose)
+
+#禿部#
+bose = "　　　　＿＿＿\n　　 ,;f　　　　　ヽ 　　　　 　　　\n　　i:　　 　　 　　 i 　　\n　　|　　　　　　　　|　　///;ﾄ,\n　　|　　　　^　　^　)　////\ﾞl[ﾞl; 　　\n　　(.　　>ﾉ(､_, )ヽ､} l 　 .i .! | 　　\n　 ,,∧ヽ　!-=ﾆ=- | │　 　| .|\n／＼..＼＼｀ﾆﾆ´ !,　{　　 .ﾉ.ﾉ\n／　 ＼ ＼￣￣￣../　　 / .|"
+
+
+#禿部おわり#
+
+if __name__ == "__main__":
+   mani_main()
