@@ -20,7 +20,7 @@
 
 ## Installation インストール
 
-mani のシンボリックリンクでも/var/local/bin/にでも張っといてくれ
+mani のシンボリックリンクでも/usr/local/bin/にでも張っといてくれ
 
 ##How-to-use 使い方
 
